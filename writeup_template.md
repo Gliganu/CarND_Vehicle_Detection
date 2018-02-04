@@ -51,7 +51,7 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 I tried various combinations of parameters and then after performing a grid search over the parameter spaces of the parameters for computing the features, I ended up using HOG features, spatially binned color and histograms of color with the following parameters:
 
 ```python
-COLOR_SPACE = 'RGB' 
+COLOR_SPACE = 'YCrCB' 
 ORIENT = 9  
 PIX_PER_CELL = 8 
 CELL_PER_BLOCK = 2 
@@ -66,14 +66,14 @@ HIST_BINS = 16
 I trained a linear SVC using the following parameters in the code cell right with the title `Create New Model` at the middle of the notebook. The library i used is `sklearn` . Using this classifier, I managed to get 0.9802 accuracy on the test set. 
 
 ```python
-svc = LinearSVC(C=1.0, loss='hinge', max_iter=1000, random_state=0, verbose=1)
+svc = LinearSVC(C=0.1, loss='hinge', max_iter=1000, random_state=0, verbose=1)
 ```
 
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I implemented a sliding window search in the `find_cars` function where i compute the HOG features just once for the entire image and then use a sliding-window mechanism over the results. In order to compensate for different sizes of the cars in the images I used multiple scales of the subimage I extracted and also multiple shapes of the subimage extracted. More specifically, the subimages which were extracted were both squared and rectangular (as in many frames, the cars were actually rectangular). Of course, after this step they were all resized to be of shape (64,64) as that was the size the training images had. 
+I implemented a sliding window search in the `find_cars` function where i compute the HOG features just once for the entire image and then use a sliding-window mechanism over the results. In order to compensate for different sizes of the cars in the images I used multiple scales of the subimage I extracted.
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
@@ -94,7 +94,11 @@ Here's a [link to my video result](./project_video_output.mp4)
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions. This can be ovserved in the `create_img_mean_to_bbox_dict`
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions. This can be ovserved in the `create_img_mean_to_bbox_dict`.
+
+For every frame, i combine all the predictions from the previous 5 frames and use a threshold of 30 for the resulting heatmap.
+
+These parameters have been chosen after a visual inspection of the results.
 
 ### Here are some frames and their corresponding heatmaps with the final bounding box drawn on the image
 
